@@ -9,10 +9,10 @@ class NumpyArraySerializer(BasketSerializer):
     type_class = np.ndarray
     ext = '.npy'
 
-    def dump(self, dest=None):
+    def dump(self, dest=None, basket=None):
         np.save(dest, self.obj)
 
-    def load(self, src):
+    def load(self, src, basket=None):
         return np.load(src)
 
 

@@ -38,13 +38,14 @@ class BasketSerializer(object):
     def check_type(self):
         return isinstance(self.obj, self.type_class)
 
-    def load(self, src):
+    def load(self, src, basket=None):
         if self.inline:
             self.obj = self.first_type_class(src)
             return self.obj
-        raise NotImplementedError
+        else:
+            raise NotImplementedError
 
-    def dump(self, dest=None):
+    def dump(self, dest=None, basket=None):
         if self.inline:
             return repr(self.obj)
         else:

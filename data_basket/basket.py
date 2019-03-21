@@ -17,11 +17,21 @@ class Basket(object):
     variant = 'Default'
     serializers = BUILTIN_SERIALIZERS + NUMPY_SERIALIZERS + PANDAS_SERIALIZERS
 
-    def __init__(self, **kwargs):
-        self.d = {}
+    def __init__(self, data=None, copy=True):
+        if data is None:
+            self.d = {}
+        else:
+            if copy:
+                self.d = data.copy()
+            else:
+                self.d = data
 
-        for k, v in kwargs.items():
-            self.d[k] = v
+        self.tmp_dir = self._gen_tmp_path()
+
+    @property
+    @cache
+    def _type_dict(self):
+        return self.__class__._get_type_dict()
 
     def save(self, fname, keys=None, excluded_keys=None):
         selection = pick(self.d, keys) if keys else self.d.copy()
@@ -30,12 +40,10 @@ class Basket(object):
                 selection.pop(k, None)
 
         meta_data = {}
-        tmp_dir = self._gen_tmp_path()
         try:
-            MKDIR(tmp_dir)
-            # TODO
+            MKDIR(self.tmp_dir)
             for k, v in six.iteritems(selection):
-                dest_without_ext = os.path.join(tmp_dir, k)
+                dest_without_ext = os.path.join(self.tmp_dir, k)
                 for serializer in self.serializers:
                     s = serializer(v)
                     if s.check_type():
@@ -44,35 +52,35 @@ class Basket(object):
                             "inline": s.inline,
                         }
                         if s.inline:
-                            item['value'] = s.dump()
+                            item['value'] = s.dump(basket=self)
                         else:
-                            s.dump(dest_without_ext + s.ext)
+                            s.dump(dest_without_ext + s.ext, basket=self)
                             item['value'] = k + s.ext
                         meta_data[k] = item
                         break
 
-            meta_fname = os.path.join(tmp_dir, '__meta__.json')
+            meta_fname = os.path.join(self.tmp_dir, '__meta__.json')
             with open(meta_fname, 'w') as metaf:
                 json.dump({
                     "variant": self.variant,
                     "data": meta_data,
                 }, metaf, ensure_ascii=False, indent=2)
 
-            zip(tmp_dir, fname)
+            zip(self.tmp_dir, fname)
         finally:
-            RM(tmp_dir)
+            RM(self.tmp_dir)
 
     @classmethod
     def load(cls, fname):
-        tmp_dir = cls._gen_tmp_path()
+        basket = Basket()
         try:
-            unzip(fname, tmp_dir)
+            unzip(fname, basket.tmp_dir)
             data = {}
-            contents = LS(tmp_dir)
+            contents = LS(basket.tmp_dir)
             if '__meta__.json' not in contents:
                 # guess mode
                 for fn in contents:
-                    src = os.path.join(tmp_dir, fn)
+                    src = os.path.join(basket.tmp_dir, fn)
                     vn = strip_ext(fn)
                     ext = get_ext(fn)
                     for s in cls.serializers:
@@ -83,7 +91,7 @@ class Basket(object):
                             except Exception as e:
                                 pass
             else:
-                with open(os.path.join(tmp_dir, '__meta__.json')) as f:
+                with open(os.path.join(basket.tmp_dir, '__meta__.json')) as f:
                     meta = json.load(f)
 
                 if 'variant' in meta and meta['variant'] != cls.variant:
@@ -96,22 +104,49 @@ class Basket(object):
                         if v.get('inline', False):
                             src = v['value']
                         else:
-                            src = os.path.join(tmp_dir, v['value'])
+                            src = os.path.join(basket.tmp_dir, v['value'])
 
-                        data[k] = serializer().load(src)
+                        data[k] = serializer().load(src, basket=basket)
 
-            basket = cls(**data)
+            basket.update(data)
             return basket
         finally:
-            RM(tmp_dir)
+            RM(basket.tmp_dir)
 
     @classmethod
-    def collect(cls, varnames=None, source=None):
+    def collect(cls, keys=None, excluded_keys=None, source=None, attr=False):
         pass
 
-    def flood(self, target=None, keys=None, excluded_keys=None, attr=False):
+    def flood(self, keys=None, excluded_keys=None, dest=None, attr=False):
         """Flood the contents into global scope or target object."""
         pass
+
+    def _dump_obj(self, obj):
+        """For compound types"""
+        for s in self.serializers:
+            try:
+                if isinstance(obj, s.type_class):
+                    s_obj = s(obj)
+                    if s_obj.inline:
+                        return {"type": s_obj.type_name, "inline": True, "value": s_obj.dump(basket=self)}
+                    else:
+                        dump_name = os.path.join('__anonymous__', gen_uuid16()+s_obj.first_ext)
+                        dest = os.path.join(self.tmp_dir, dump_name)
+                        MKDIR(DIRNAME(dest))
+                        s_obj.dump(dest, basket=self)
+                        return {"type": s_obj.type_name, "inline": False, "value": dump_name}
+            except Exception as e:
+                pass
+        raise CannotDumpBasketData(obj)
+
+    def _load_obj(self, d):
+        """For compound types"""
+        s = self._type_dict.get(d['type'])
+        if s:
+            src = d['value'] if s.inline else os.path.join(self.tmp_dir, d['value'])
+            return s().load(src, basket=self)
+        else:
+            raise CannotLoadBasketData(d)
 
     @staticmethod
     def _gen_tmp_path():
@@ -138,6 +173,9 @@ class Basket(object):
 
     def setdefault(self, key, default):
         return self.d.setdefault(key, default)
+
+    def update(self, d):
+        self.d.update(d)
 
     def keys(self):
         return self.d.keys()
