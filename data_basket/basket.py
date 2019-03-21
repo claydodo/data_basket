@@ -2,6 +2,7 @@
 
 import six
 import os
+import sys
 import json
 from datetime import datetime
 import warnings
@@ -11,6 +12,9 @@ from krux.functools.cache import cache
 from krust.file_utils import *
 from krust.zip_utils import *
 from .serializers import *
+
+
+GLOBAL_SCOPE = sys.modules['__main__'].__dict__
 
 
 class Basket(object):
@@ -115,11 +119,51 @@ class Basket(object):
 
     @classmethod
     def collect(cls, keys=None, excluded_keys=None, source=None, attr=False):
-        pass
+        if source is None:
+            source = GLOBAL_SCOPE
+
+        if isinstance(source, dict):
+            attr = False
+            keys = set(source.keys()) if keys is None else set(keys)
+        else:
+            keys = set(keys) if keys else set()
+
+        if excluded_keys:
+            keys = keys - set(excluded_keys)
+
+        data = {}
+        for key in keys:
+            try:
+                if attr:
+                    data[key] = getattr(source, key)
+                else:
+                    data[key] = source[key]
+            except (AttributeError, KeyError) as e:
+                pass
+
+        return cls(data, copy=False)
 
     def flood(self, keys=None, excluded_keys=None, dest=None, attr=False):
         """Flood the contents into global scope or target object."""
-        pass
+        keys = set(self.keys()) if keys is None else set(keys)
+        if excluded_keys:
+            keys = keys - set(excluded_keys)
+
+        if dest is None:
+            dest = GLOBAL_SCOPE
+
+        if isinstance(dest, dict):
+            attr = False
+
+        for key in keys:
+            try:
+                value = self[key]
+                if attr:
+                    setattr(dest, key, value)
+                else:
+                    dest[key] = value
+            except KeyError as e:
+                pass
 
     def _dump_obj(self, obj):
         """For compound types"""

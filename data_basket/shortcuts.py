@@ -5,13 +5,14 @@ import six
 from .basket import *
 
 
-def load_basket(fname, basket_class=Basket, flood=True, target=None, keys=None, excluded_keys=None, attr=False):
+def load_basket(fname, flood=True, keys=None, excluded_keys=None, dest=None, attr=False, basket_class=Basket):
     basket = basket_class.load(fname)
     if flood:
-        basket.flood(target=target, keys=keys, excluded_keys=excluded_keys, attr=attr)
+        basket.flood(keys=keys, excluded_keys=excluded_keys, dest=dest, attr=attr)
     return basket
 
 
-def save_basket(fname, varnames, basket_class=Basket, source=None):
-    basket = basket_class.collect(varnames=varnames, source=source)
+def save_basket(fname, keys=None, excluded_keys=None, source=None, attr=False, basket_class=Basket):
+    basket = basket_class.collect(keys=keys, excluded_keys=excluded_keys, source=source, attr=attr)
     basket.save(fname)
+    return basket
