@@ -12,9 +12,12 @@ from krux.functools.cache import cache
 from krust.file_utils import *
 from krust.zip_utils import *
 from .serializers import *
+from .exceptions import *
 
 
 GLOBAL_SCOPE = sys.modules['__main__'].__dict__
+
+__all__ = ['Basket']
 
 
 class Basket(object):
@@ -230,8 +233,8 @@ class Basket(object):
     def items(self):
         return self.d.items()
 
-    def iteritems(self):
-        return six.iteritems(self.d)
+    def __contains__(self, item):
+        return item in self.d
 
     def __repr__(self):
         return self.d.__repr__()

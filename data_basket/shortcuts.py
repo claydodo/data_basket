@@ -4,6 +4,8 @@
 import six
 from .basket import *
 
+__all__ = ['load_basket', 'save_basket']
+
 
 def load_basket(fname, flood=True, keys=None, excluded_keys=None, dest=None, attr=False, basket_class=Basket):
     basket = basket_class.load(fname)

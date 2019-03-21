@@ -4,6 +4,10 @@ from .base import BasketSerializer
 try:
     import numpy as np
 
+    __all__ = [
+        'NumpyArraySerializer',
+        'NUMPY_SERIALIZERS'
+    ]
 
     class NumpyArraySerializer(BasketSerializer):
         type_name = 'numpy_array'
@@ -19,4 +23,6 @@ try:
 
     NUMPY_SERIALIZERS = [NumpyArraySerializer]
 except ImportError:
+    __all__ = ['NUMPY_SERIALIZERS']
+
     NUMPY_SERIALIZERS = []

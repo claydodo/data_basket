@@ -4,6 +4,10 @@ from .base import BasketSerializer
 try:
     import pandas as pd
 
+    __all__ = [
+        'PandasDataFrameSerializer',
+        'PANDAS_SERIALIZERS'
+    ]
 
     class PandasDataFrameSerializer(BasketSerializer):
         type_name = 'pandas_data_frame'
@@ -14,4 +18,6 @@ try:
     # PANDAS_SERIALIZERS = [PandasDataFrameSerializer]
     PANDAS_SERIALIZERS = []
 except ImportError:
+    __all__ = ['PANDAS_SERIALIZERS']
+
     PANDAS_SERIALIZERS = []

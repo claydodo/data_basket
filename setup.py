@@ -8,7 +8,7 @@ import setuptools
 
 setuptools.setup(
     name="data_basket",
-    version="0.0.2",
+    version="0.0.3",
     author="claydodo and his little friends (xiao huo ban)",
     author_email="claydodo@foxmail.com",
     description="data basket",

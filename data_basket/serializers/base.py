@@ -1,3 +1,6 @@
+__all__ = ['BasketSerializer']
+
+
 class BasketSerializer(object):
     type_name = ''
     type_class = object
