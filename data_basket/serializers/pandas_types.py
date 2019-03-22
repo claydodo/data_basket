@@ -6,7 +6,7 @@ try:
 
     __all__ = [
         'PandasDataFrameSerializer',
-        'PANDAS_SERIALIZERS'
+        'PANDAS_SERIALIZERS', 'PANDAS_TEXT_SERIALIZERS',
     ]
 
     class PandasDataFrameSerializer(BasketSerializer):
@@ -17,7 +17,9 @@ try:
     # Not Ready
     # PANDAS_SERIALIZERS = [PandasDataFrameSerializer]
     PANDAS_SERIALIZERS = []
+    PANDAS_TEXT_SERIALIZERS = []
 except ImportError:
     __all__ = ['PANDAS_SERIALIZERS']
 
     PANDAS_SERIALIZERS = []
+    PANDAS_TEXT_SERIALIZERS = []

@@ -17,7 +17,7 @@ from .exceptions import *
 
 GLOBAL_SCOPE = sys.modules['__main__'].__dict__
 
-__all__ = ['Basket']
+__all__ = ['Basket', 'TextBasket']
 
 
 class Basket(object):
@@ -79,7 +79,7 @@ class Basket(object):
 
     @classmethod
     def load(cls, fname):
-        basket = Basket()
+        basket = cls()
         try:
             unzip(fname, basket.tmp_dir)
             data = {}
@@ -239,3 +239,7 @@ class Basket(object):
     def __repr__(self):
         return self.d.__repr__()
 
+
+class TextBasket(Basket):
+    variant = 'Default'
+    serializers = BUILTIN_SERIALIZERS + NUMPY_TEXT_SERIALIZERS + PANDAS_TEXT_SERIALIZERS
