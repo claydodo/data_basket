@@ -19,7 +19,7 @@ try:
             return self.obj
 
         def dump(self, dest=None, basket=None):
-            self.obj.to_hdf(dest, 'data', mode='w')
+            self.obj.to_hdf(dest, 'data', mode='w', format='table')
 
 
     class PandasDataFrameCSVSerializer(PandasDataFrameSerializer):
