@@ -29,7 +29,7 @@ try:
         # TODO: masked array handling.
 
         def dump(self, dest=None, basket=None):
-            np.savetxt(dest, self.obj)
+            np.savetxt(dest, self.obj, fmt='%g')
 
         def load(self, src, basket=None):
             return np.loadtxt(src)

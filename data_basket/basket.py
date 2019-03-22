@@ -27,6 +27,11 @@ class Basket(object):
     def __init__(self, data=None, copy=True):
         if data is None:
             self.d = {}
+        elif isinstance(data, Basket):
+            if copy:
+                self.d = data.d.copy()
+            else:
+                self.d = data.d
         else:
             if copy:
                 self.d = data.copy()
@@ -41,6 +46,7 @@ class Basket(object):
         return self.__class__._get_type_dict()
 
     def save(self, fname, keys=None, excluded_keys=None):
+        fname = P(fname)
         selection = pick(self.d, keys) if keys else self.d.copy()
         if excluded_keys:
             for k in excluded_keys:
@@ -61,8 +67,8 @@ class Basket(object):
                         if s.inline:
                             item['value'] = s.dump(basket=self)
                         else:
-                            s.dump(dest_without_ext + s.ext, basket=self)
-                            item['value'] = k + s.ext
+                            s.dump(dest_without_ext + s.first_ext, basket=self)
+                            item['value'] = k + s.first_ext
                         meta_data[k] = item
                         break
 
@@ -79,6 +85,7 @@ class Basket(object):
 
     @classmethod
     def load(cls, fname):
+        fname = P(fname)
         basket = cls()
         try:
             unzip(fname, basket.tmp_dir)
@@ -91,9 +98,10 @@ class Basket(object):
                     vn = strip_ext(fn)
                     ext = get_ext(fn)
                     for s in cls.serializers:
-                        if (not s.inline) and ext in s.exts:
+                        s_obj = s()
+                        if (not s_obj.inline) and ext in s_obj.exts:
                             try:
-                                data[vn] = s().load(src)
+                                data[vn] = s_obj.load(src)
                                 break
                             except Exception as e:
                                 pass
