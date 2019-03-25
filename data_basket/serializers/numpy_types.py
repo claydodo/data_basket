@@ -22,7 +22,7 @@ try:
 
 
     class NumpyArrayTextSerializer(BasketSerializer):
-        type_name = 'numpy_array'
+        type_name = 'text_numpy_array'
         type_class = np.ndarray
         ext = '.txt'
 
@@ -35,8 +35,8 @@ try:
             return np.loadtxt(src)
 
 
-    NUMPY_SERIALIZERS = [NumpyArraySerializer]
-    NUMPY_TEXT_SERIALIZERS = [NumpyArrayTextSerializer]
+    NUMPY_SERIALIZERS = [NumpyArraySerializer, NumpyArrayTextSerializer]
+    NUMPY_TEXT_SERIALIZERS = [NumpyArrayTextSerializer, NumpyArraySerializer]
 except ImportError:
     __all__ = ['NUMPY_SERIALIZERS']
 

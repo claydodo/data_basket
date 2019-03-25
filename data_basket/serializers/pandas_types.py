@@ -23,6 +23,7 @@ try:
 
 
     class PandasDataFrameCSVSerializer(PandasDataFrameSerializer):
+        type_name = 'csv_pandas_data_frame'
         ext = ('.csv', '.tsv')
 
         def load(self, src, basket=None):
@@ -42,7 +43,7 @@ try:
 
 
     class PandasSeriesCSVSerializer(PandasDataFrameCSVSerializer):
-        type_name = 'pandas_series'
+        type_name = 'csv_pandas_series'
         type_class = pd.Series
 
         def load(self, src, basket=None):
@@ -50,8 +51,8 @@ try:
             return self.obj
 
     # TODO: other pandas types
-    PANDAS_SERIALIZERS = [PandasDataFrameSerializer, PandasSeriesSerializer]
-    PANDAS_TEXT_SERIALIZERS = [PandasDataFrameCSVSerializer, PandasSeriesCSVSerializer]
+    PANDAS_SERIALIZERS = [PandasDataFrameSerializer, PandasDataFrameCSVSerializer, PandasSeriesSerializer, PandasSeriesCSVSerializer]
+    PANDAS_TEXT_SERIALIZERS = [PandasDataFrameCSVSerializer, PandasDataFrameSerializer, PandasSeriesCSVSerializer, PandasSeriesSerializer]
 except ImportError:
     __all__ = ['PANDAS_SERIALIZERS']
 

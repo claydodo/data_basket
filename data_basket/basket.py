@@ -249,5 +249,5 @@ class Basket(object):
 
 
 class TextBasket(Basket):
-    variant = 'Default'
+    variant = 'Text'
     serializers = BUILTIN_SERIALIZERS + NUMPY_TEXT_SERIALIZERS + PANDAS_TEXT_SERIALIZERS
